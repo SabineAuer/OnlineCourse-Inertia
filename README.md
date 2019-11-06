@@ -1,1 +1,1 @@
-# OnlineCouse-Inertia
+# OnlineCourse-Inertia
