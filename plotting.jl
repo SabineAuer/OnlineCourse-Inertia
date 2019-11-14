@@ -8,22 +8,27 @@ function plot_res(result, powergrid,disturbed_node)
     append!(ω_indices,findall(n -> isa(n, VSIMinimal), powergrid.nodes))
     append!(ω_indices,findall(n -> isa(n, FourthOrderEq), powergrid.nodes))
     append!(ω_indices,findall(n -> isa(n, WindTurbineGenType4_RotorControl), powergrid.nodes))
+    append!(ω_indices,findall(n -> isa(n, CurtailedPowerPlantWithInertia), powergrid.nodes))
 
-    ω_PLL_indices = findall(n -> isa(n, WindTurbineGenType4_RotorControl), powergrid.nodes)
+    #ω_PLL_indices = findall(n -> isa(n, WindTurbineGenType4_RotorControl), powergrid.nodes)
+    #append!(ω_PLL_indices,findall(n -> isa(n, CurtailedPowerPlantWithInertia), powergrid.nodes))
+
+    #ω_PLL=[]
+    #for i in ω_PLL_indices
+    #    append!(ω_PLL,[result.dqsol(result.dqsol.t,Val{1},idxs=variable_index(powergrid.nodes,i , :θ_PLL)).u])
+    #end
     ω_colors = reshape(Plots.get_color_palette(:auto, plot_color(:white), 8)[ω_indices], (1,length(ω_indices)))
     ω_labels = reshape([latexstring(string(raw"\omega", "_{$i}")) for i=ω_indices], (1, length(ω_indices)))
-    ω_PLL_labels = reshape([latexstring(string(raw"\omega", "_{$i}")) for i=ω_PLL_indices], (1, length(ω_PLL_indices)))
+    #ω_PLL_labels = reshape([latexstring(string(raw"\omega", "_{$i}")) for i=ω_PLL_indices], (1, length(ω_PLL_indices)))
     p_labels = reshape([latexstring(string(raw"p", "_{$i}")) for i=1:length(powergrid.nodes)], (1, length(powergrid.nodes)))
+
     pl_p = plot(result, :, :p, legend = (0.8, 0.95), ylabel=L"p [p.u.]", label=p_labels)
     pl_ω = plot(result, ω_indices, :ω, legend = (0.8, 0.7), ylabel=L"\omega \left[rad/s\right]", label=ω_labels, color=ω_colors)
-    ω_PLL=[]
-    for i in ω_PLL_indices
-        append!(ω_PLL,[result.dqsol(range(0.,stop=result.dqsol.t[end],length=10000),Val{1},idxs=variable_index(powergrid.nodes,i , :θ_PLL)).u])
-    end
-    pl_ω_PLL = plot(ω_PLL, legend = (0.8, 0.7), ylabel=L"\omega \left[rad/s\right]", label=ω_PLL_labels)
+    #pl_ω = plot!(result.dqsol.t,ω_PLL, legend = (0.5, 0.7), label=ω_PLL_labels)
+  
     pl = plot(
-        pl_p, pl_ω,pl_ω_PLL;
-        layout=(3,1),
+        pl_p, pl_ω;
+        layout=(2,1),
         size = (500, 500),
         lw=3,
         xlabel=L"t[s]"
@@ -58,4 +63,5 @@ function plot_res_compare(result1,result2,powergrid1,powergrid2,disturbed_node)
         xlabel=L"t[s]"
     )
     display(pl)
+    savefig(pl,"StudyCase_linefault.pdf")
 end

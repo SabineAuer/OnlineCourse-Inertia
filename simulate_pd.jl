@@ -25,3 +25,12 @@ function simulate_pd(pd,powergrid,operationpoint,timespan)
     result_pd2 = PowerGridSolution(integrator.sol, powergrid)
     return (integrator.sol,result_pd2)
 end
+
+function simulate_linefault(disturbed_nodes,powergrid,operationpoint,simulation_time)
+	line_fault=LineFault(disturbed_nodes[1],disturbed_nodes[2]);
+	faulty_grid = line_fault(powergrid);
+	problem = ODEProblem{true}(rhs(faulty_grid),operationpoint.vec,simulation_time)
+	sol_lf = solve(problem,Rodas4(autodiff=false),saveat=1e-4);
+	result_lf=PowerGridSolution(sol_lf, faulty_grid);
+   	return (sol_lf,result_lf,faulty_grid)
+end

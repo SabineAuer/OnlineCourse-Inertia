@@ -16,21 +16,23 @@ end
         sum(map(node -> dimension(node), nodes[1:n-1]))
     end
 end
-
-function determine_rocof_nadir(powergrid,sol)
+function determine_rocof_nadir(powergrid,sol,final_time)
     ω_indices = findall(n -> isa(n, SwingEqLVS), powergrid.nodes)
     append!(ω_indices,findall(n -> isa(n, VSIMinimal), powergrid.nodes))
+    append!(ω_indices,findall(n -> isa(n, FourthOrderEq), powergrid.nodes))
+    append!(ω_indices,findall(n -> isa(n, WindTurbineGenType4_RotorControl), powergrid.nodes))
+    append!(ω_indices,findall(n -> isa(n, CurtailedPowerPlantWithInertia), powergrid.nodes))
     rocof_max = zeros(length(ω_indices))
     nadir = zeros(length(ω_indices))
     j=0
     for i in ω_indices
         j+=1
-        rocof= sol(range(0.,stop=2.,length=10000),Val{1},idxs=variable_index(powergrid.nodes, i, :ω)).u
+        rocof= sol(range(0.,stop=final_time,length=10000),Val{1},idxs=variable_index(powergrid.nodes, i, :ω)).u
         rocof_max[j]=maximum(abs.(rocof))
-        omega= sol(range(0.,stop=2.,length=10000),Val{0},idxs=variable_index(powergrid.nodes, i, :ω)).u
+        omega= sol(range(0.,stop=final_time,length=10000),Val{0},idxs=variable_index(powergrid.nodes, i, :ω)).u
         nadir[j]=maximum(abs.(omega))
     end
-    (nadir,rocof_max)
+    DataFrame(node=ω_indices,RoCoF=rocof_max, nadir=nadir)
 end;
 
 function change_inertia(scaling_factor,nodes,powergrid)
