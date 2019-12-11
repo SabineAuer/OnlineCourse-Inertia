@@ -16,7 +16,7 @@ end
         sum(map(node -> dimension(node), nodes[1:n-1]))
     end
 end
-function determine_rocof_nadir(powergrid,sol,final_time)
+function determine_rocof_nadir(powergrid,sol,final_time,tspan_fault)
     ω_indices = findall(n -> isa(n, SwingEqLVS), powergrid.nodes)
     append!(ω_indices,findall(n -> isa(n, VSIMinimal), powergrid.nodes))
     append!(ω_indices,findall(n -> isa(n, FourthOrderEq), powergrid.nodes))
@@ -27,9 +27,12 @@ function determine_rocof_nadir(powergrid,sol,final_time)
     j=0
     for i in ω_indices
         j+=1
-        rocof= sol(range(0.,stop=final_time,length=10000),Val{1},idxs=variable_index(powergrid.nodes, i, :ω)).u
+        time_window = range(0.,stop=final_time,length=10000)
+        rocof= sol(time_window,Val{1},idxs=variable_index(powergrid.nodes, i, :ω)).u
+        # Unstetigkeit zur Störzeit führt zu falschen ROCOF-Messwerten
+        rocof[argmin(abs.(time_window.-0.5))]=0
         rocof_max[j]=maximum(abs.(rocof))
-        omega= sol(range(0.,stop=final_time,length=10000),Val{0},idxs=variable_index(powergrid.nodes, i, :ω)).u
+        omega= sol(time_window,Val{0},idxs=variable_index(powergrid.nodes, i, :ω)).u
         nadir[j]=maximum(abs.(omega))
     end
     DataFrame(node=ω_indices,RoCoF=rocof_max, nadir=nadir)

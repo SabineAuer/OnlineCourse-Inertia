@@ -9,6 +9,7 @@ function plot_res(result, powergrid,disturbed_node)
     append!(ω_indices,findall(n -> isa(n, FourthOrderEq), powergrid.nodes))
     append!(ω_indices,findall(n -> isa(n, WindTurbineGenType4_RotorControl), powergrid.nodes))
     append!(ω_indices,findall(n -> isa(n, CurtailedPowerPlantWithInertia), powergrid.nodes))
+    append!(ω_indices,findall(n -> isa(n, PVInverterWithFrequencyControl), powergrid.nodes))
 
     #ω_PLL_indices = findall(n -> isa(n, WindTurbineGenType4_RotorControl), powergrid.nodes)
     #append!(ω_PLL_indices,findall(n -> isa(n, CurtailedPowerPlantWithInertia), powergrid.nodes))
@@ -25,7 +26,7 @@ function plot_res(result, powergrid,disturbed_node)
     pl_p = plot(result, :, :p, legend = (0.8, 0.95), ylabel=L"p [p.u.]", label=p_labels)
     pl_ω = plot(result, ω_indices, :ω, legend = (0.8, 0.7), ylabel=L"\omega \left[rad/s\right]", label=ω_labels, color=ω_colors)
     #pl_ω = plot!(result.dqsol.t,ω_PLL, legend = (0.5, 0.7), label=ω_PLL_labels)
-  
+
     pl = plot(
         pl_p, pl_ω;
         layout=(2,1),
