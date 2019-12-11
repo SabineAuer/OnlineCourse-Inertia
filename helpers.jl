@@ -16,7 +16,7 @@ end
         sum(map(node -> dimension(node), nodes[1:n-1]))
     end
 end
-function determine_rocof_nadir(powergrid,sol,final_time,tspan_fault)
+function determine_rocof_nadir(powergrid,sol,final_time,start_fault)
     ω_indices = findall(n -> isa(n, SwingEqLVS), powergrid.nodes)
     append!(ω_indices,findall(n -> isa(n, VSIMinimal), powergrid.nodes))
     append!(ω_indices,findall(n -> isa(n, FourthOrderEq), powergrid.nodes))
